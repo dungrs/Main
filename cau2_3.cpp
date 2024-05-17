@@ -21,108 +21,56 @@ struct Muon {
 };
 
 void NhapSach() {
-    Sach sach;
-    cout << "Nhap MaSach: ";
-    cin >> sach.MaSach;
-    cout << "Nhap TenSach: ";
+    Sach s;
+    cout << "Nhap MaSach: "; cin >> s.MaSach;
     cin.ignore();
-    cin.getline(sach.TenSach, 50);
-    cout << "Nhap NhaXB: ";
-    cin.getline(sach.NhaXB, 50);
-    cout << "Nhap GiaBia: ";
-    cin >> sach.GiaBia;
-    
-    ofstream file("Sach.bin", ios::binary | ios::app);
-    if (!file.is_open()) {
-        cerr << "Loi! Khong the mo file Sach.bin!" << endl;
-        return;
-    }
+    cout << "Nhap TenSach: "; cin.getline(s.TenSach, 50);
+    cout << "Nhap NhaXB: "; cin.getline(s.NhaXB, 50);
+    cout << "Nhap GiaBia: "; cin >> s.GiaBia;
 
-    file.write((char*)&sach, sizeof(Sach));
-    file.close();
+    ofstream("Sach.bin", ios::binary | ios::app).write((char*)&s, sizeof(Sach));
     cout << "Sach da duoc them vao file Sach.bin" << endl;
-    cout << "_____________________________________________" << endl;
 }
 
 void NhapMuon() {
-    Muon muon;
-    cout << "Nhap MaSach: ";
-    cin >> muon.MaSach;
-    cout << "Nhap MaBanDoc: ";
-    cin >> muon.MaBanDoc;
-    cout << "Nhap NgayMuon: ";
-    cin >> muon.NgayMuon;
-    cout << "Nhap ThangMuon: ";
-    cin >> muon.ThangMuon;
+    Muon m;
+    cout << "Nhap MaSach: "; cin >> m.MaSach;
+    cout << "Nhap MaBanDoc: "; cin >> m.MaBanDoc;
+    cout << "Nhap NgayMuon: "; cin >> m.NgayMuon;
+    cout << "Nhap ThangMuon: "; cin >> m.ThangMuon;
 
-    // Tinh tien coc
     ifstream sachFile("Sach.bin", ios::binary);
-    if (!sachFile.is_open()) {
-        cerr << "Loi! Khong the mo file Sach.bin" << endl;
-        return;
-    }
-
-    Sach sach;
-    float tienCoc = 0;
-    
-    while (sachFile.read((char*)&sach, sizeof(Sach))) {
-        if (sach.MaSach == muon.MaSach) {
-            tienCoc = 0.4 * sach.GiaBia;
-        }
-    }
-
+    Sach s;
+    while (sachFile.read((char*)&s, sizeof(Sach)))
+        if (s.MaSach == m.MaSach) { m.TienCoc = 0.4 * s.GiaBia; break; }
     sachFile.close();
-    muon.TienCoc = tienCoc;
-    
-    ofstream file("Muon.bin", ios::binary | ios::app);
-    if (!file.is_open()) {
-        cerr << "Loi! Khong the mo file Muon.bin" << endl;
-        return;
-    }
 
-    file.write((char*)&muon, sizeof(Muon));
-    file.close();
+    ofstream("Muon.bin", ios::binary | ios::app).write((char*)&m, sizeof(Muon));
     cout << "Thong tin muon sach da duoc them vao file Muon.bin" << endl;
-    cout << "_____________________________________________" << endl;
 }
 
 void TinhTienCoc() {
     char MaBanDoc[6]; 
-    cout << "Nhap MaBanDoc: ";
-    cin >> MaBanDoc;
+    cout << "Nhap MaBanDoc: "; cin >> MaBanDoc;
 
     ifstream muonFile("Muon.bin", ios::binary);
-    if (!muonFile.is_open()) {
-        cerr << "Loi! Khong the mo file Muon.bin" << endl;
-        return;
-    }
-
-    Muon muon;
-    Sach sach;
+    Muon m;
+    Sach s;
     float tongTienCoc = 0;
     int stt = 1;
 
-    ofstream khachHangFile((MaBanDoc + string(".txt")).c_str(), ios::app);
-    if (!khachHangFile.is_open()) {
-        cerr << "Loi! Khong the tao file cho khach hang " << MaBanDoc << endl;
-        return;
-    }
+    ofstream khachHangFile((string(MaBanDoc) + ".txt").c_str(), ios::app);
+    cout << "STT\tTenSach\t\tNgayMuon\tThangMuon\tTienCoc\t\tGiaBia\n";
+    khachHangFile << "STT\tTenSach\t\tNgayMuon\tThangMuon\tTienCoc\t\tGiaBia\n";
 
-    cout << "STT\tTenSach\t\tNgayMuon\tThangMuon\tTienCoc\t\tGiaBia" << endl;
-    khachHangFile << "STT\tTenSach\t\tNgayMuon\tThangMuon\tTienCoc\t\tGiaBia" << endl;
-    while (muonFile.read((char*)&muon, sizeof(Muon))) {
-        if (strcmp(muon.MaBanDoc, MaBanDoc) == 0) {
+    while (muonFile.read((char*)&m, sizeof(Muon))) {
+        if (strcmp(m.MaBanDoc, MaBanDoc) == 0) {
             ifstream sachFile("Sach.bin", ios::binary);
-            if (!sachFile.is_open()) {
-                cerr << "Loi! Khong the mo file Sach.bin" << endl;
-                return;
-            }
-
-            while (sachFile.read((char*)&sach, sizeof(Sach))) {
-                if (sach.MaSach == muon.MaSach) {
-                    cout << stt << "\t" << sach.TenSach << "\t\t" << muon.NgayMuon << "\t\t" << muon.ThangMuon << "\t\t" << muon.TienCoc << "\t\t" << sach.GiaBia << endl;
-                    khachHangFile << stt << "\t" << sach.TenSach << "\t\t" << muon.NgayMuon << "\t\t" << muon.ThangMuon << "\t\t" << muon.TienCoc << "\t\t" << sach.GiaBia << endl;
-                    tongTienCoc += muon.TienCoc;
+            while (sachFile.read((char*)&s, sizeof(Sach))) {
+                if (s.MaSach == m.MaSach) {
+                    cout << stt << "\t" << s.TenSach << "\t\t" << m.NgayMuon << "\t\t" << m.ThangMuon << "\t\t" << m.TienCoc << "\t\t" << s.GiaBia << endl;
+                    khachHangFile << stt << "\t" << s.TenSach << "\t\t" << m.NgayMuon << "\t\t" << m.ThangMuon << "\t\t" << m.TienCoc << "\t\t" << s.GiaBia << endl;
+                    tongTienCoc += m.TienCoc;
                     break;
                 }
             }
@@ -133,43 +81,23 @@ void TinhTienCoc() {
 
     cout << "Tong tien coc: " << tongTienCoc << endl;
     khachHangFile << "Tong tien coc: " << tongTienCoc << endl;
-
-    khachHangFile.close();
     muonFile.close();
+    khachHangFile.close();
 }
 
 int main() {
     int luaChon;
-
     do {
-        // Hiển thị menu
-        cout << "MENU:" << endl;
-        cout << "1. Nhap sach" << endl;
-        cout << "2. Nhap thong tin muon sach" << endl;
-        cout << "3. Tinh tien coc" << endl;
-        cout << "0. Thoat" << endl;
-        cout << "Lua chon cua ban: ";
+        cout << "MENU:\n1. Nhap sach\n2. Nhap thong tin muon sach\n3. Tinh tien coc\n0. Thoat\nLua chon cua ban: ";
         cin >> luaChon;
 
-        // Xử lý các tùy chọn từ menu
         switch (luaChon) {
-            case 1:
-                NhapSach();
-                break;
-            case 2:
-                NhapMuon();
-                break;
-            case 3:
-                TinhTienCoc();
-                break;
-            case 0:
-                cout << "Tam biet!";
-                break;
-            default:
-                cout << "Lua chon khong hop le!";
-                break;
+            case 1: NhapSach(); break;
+            case 2: NhapMuon(); break;
+            case 3: TinhTienCoc(); break;
+            case 0: cout << "Tam biet!\n"; break;
+            default: cout << "Lua chon khong hop le!\n"; break;
         }
-    } while (luaChon != 0);
-
+    } while (luaChon != 0)
     return 0;
 }
